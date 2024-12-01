@@ -1,0 +1,4 @@
+flask==2.1.0
+gremlinpython==3.6.2
+python-dotenv==0.20.0
+azure-cosmos==4.3.1
