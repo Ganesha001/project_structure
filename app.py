@@ -1,22 +1,40 @@
 import os
-from flask import Flask
-from relationship_graph_app.routes.relationship_routes import relationship_bp
-from relationship_graph_app.config import Config
+import sys
+import traceback
+from flask import Flask, jsonify
 
 def create_app():
-    app = Flask(__name__)
-    
-    # Load configuration
-    app.config.from_object(Config)
-    
-    # Minimal secret key handling
-    app.secret_key = Config.get_secret_key()
-    
-    # Register blueprints
-    app.register_blueprint(relationship_bp, url_prefix='/api')
-    
-    return app
+    try:
+        from relationship_graph_app.routes.relationship_routes import relationship_bp
+        from relationship_graph_app.config import Config
 
-if __name__ == '__main__':
-    app = create_app()
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+        app = Flask(__name__)
+        
+        # Load configuration
+        app.config.from_object(Config)
+        
+        # Register blueprints
+        app.register_blueprint(relationship_bp, url_prefix='/api')
+        
+        # Error handler for unhandled exceptions
+        @app.errorhandler(Exception)
+        def handle_exception(e):
+            # Log the error
+            app.logger.error(f"Unhandled Exception: {str(e)}")
+            traceback.print_exc()
+            
+            # Return a generic error response
+            return jsonify({
+                'error': 'Internal Server Error', 
+                'message': str(e)
+            }), 500
+        
+        return app
+    
+    except Exception as e:
+        print(f"Error creating app: {e}", file=sys.stderr)
+        traceback.print_exc(file=sys.stderr)
+        raise
+
+# Explicit app creation for Gunicorn
+app = create_app()
