@@ -1,6 +1,10 @@
-from relationship_graph_app.config import Config
+from relationship_graph_app.utils.logging_config import configure_logging
 from app import create_app
 
+# Configure logging before creating the app
+configure_logging()
+
+# Create the Flask app
 app = create_app()
 
 if __name__ == '__main__':
